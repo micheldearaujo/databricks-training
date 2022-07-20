@@ -142,7 +142,29 @@ rawDataDF = (spark.read
 )
 
 # write to Delta Lake
-rawDataDF.write.mode("overwrite").format("delta").partitionBy("Country").save(DataPath)
+#rawDataDF.write.mode("overwrite").format("delta").partitionBy("Country").save(DataPath)
+
+# COMMAND ----------
+
+# Read the CSV raw data file into a Spark DataFrame
+rawDataDF = (spark.read
+        .option("header", 'true')
+        .schema(inputSchema)
+        .csv(inputPath)
+)
+
+# COMMAND ----------
+
+display(rawDataDF)
+
+# COMMAND ----------
+
+# Now re-write this dataframe as a Delta Table
+rawDataDF.write.mode('overwrite').format('delta').partitionBy('Country').save(DataPath)
+
+# COMMAND ----------
+
+# MAGIC %fs ls /user/michel.araujo@artefact.com/delta/customer-data/
 
 # COMMAND ----------
 
@@ -177,6 +199,18 @@ display(spark.sql("SELECT * FROM delta.`{}` LIMIT 5".format(DataPath)))
 
 # COMMAND ----------
 
+spark.sql("DROP TABLE IF EXISTS customer_data_delta")
+
+# COMMAND ----------
+
+spark.sql("""
+    CREATE TABLE customer_data_delta
+    USING DELTA
+    LOCATION '{}'
+""".format(DataPath))
+
+# COMMAND ----------
+
 spark.sql("""
   DROP TABLE IF EXISTS customer_data_delta
 """)
@@ -196,7 +230,7 @@ spark.sql("""
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT count(*) FROM customer_data_delta
+# MAGIC select count(*) from customer_data_delta
 
 # COMMAND ----------
 
@@ -247,13 +281,12 @@ display(dbutils.fs.ls(DataPath + "/_delta_log"))
 
 # COMMAND ----------
 
-miniDataInputPath = "/mnt/training/online_retail/outdoor-products/outdoor-products-mini.csv"
+miniDataInputPath = '/mnt/training/online_retail/outdoor-products/outdoor-products-mini.csv'
 
-newDataDF = (spark
-  .read
-  .option("header", "true")
-  .schema(inputSchema)
-  .csv(miniDataInputPath)
+newDataDF = (spark.read
+        .option('header', 'true')
+        .schema(inputSchema)
+        .csv(miniDataInputPath)
 )
 
 # COMMAND ----------
@@ -296,7 +329,7 @@ newDataDF.count()
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT count(*) FROM customer_data_delta
+# MAGIC select count(*) from customer_data_delta
 
 # COMMAND ----------
 
@@ -327,13 +360,21 @@ display(upsertDF)
 
 # COMMAND ----------
 
+upsertDF = (spark.read
+       .format('json')
+       .load('/mnt/training/enb/commonfiles/upsert-data.json')
+)
+display(upsertDF)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC 
 # MAGIC We'll register this as a temporary view so that this table doesn't persist in DBFS (but we can still use SQL to query it).
 
 # COMMAND ----------
 
-upsertDF.createOrReplaceTempView("upsert_data")
+upsertDF.createOrReplaceTempView('upsert_data')
 
 # COMMAND ----------
 
@@ -351,7 +392,7 @@ upsertDF.createOrReplaceTempView("upsert_data")
 # MAGIC MERGE INTO customer_data_delta
 # MAGIC USING upsert_data
 # MAGIC ON customer_data_delta.InvoiceNo = upsert_data.InvoiceNo
-# MAGIC   AND customer_data_delta.StockCode = upsert_data.StockCode
+# MAGIC  AND customer_data_delta.StockCode = upsert_data.StockCode
 # MAGIC WHEN MATCHED THEN
 # MAGIC   UPDATE SET *
 # MAGIC WHEN NOT MATCHED
