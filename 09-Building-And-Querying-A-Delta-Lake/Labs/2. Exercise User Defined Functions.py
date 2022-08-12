@@ -66,12 +66,107 @@ dbutils.fs.rm(destFile, True)
 
 # COMMAND ----------
 
+
+
+# COMMAND ----------
+
+# MAGIC %fs head dbfs:/mnt/training/dataframes/people-with-dups.txt
+
+# COMMAND ----------
+
+df = (spark.read
+     .option('header', 'true')
+     .option('sep', ':')
+     .csv(sourceFile)
+     )
+
+# COMMAND ----------
+
+spark.conf.set("spark.sql.shuffle.partitions", 8)
+
+# COMMAND ----------
+
+display(df)
+
+# COMMAND ----------
+
+df.count()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 1.0 Correct the Names: Put everything with "Title" 
+
+# COMMAND ----------
+
+def titleString(string):
+    return string.title()
+
+titleStringUDF = udf(titleString)
+
+# COMMAND ----------
+
+import pyspark.sql.functions as F
+
+# COMMAND ----------
+
+df = df.withColumn('firstName', titleStringUDF(F.col('firstName')))
+df = df.withColumn('middleName', titleStringUDF(F.col('middleName')))
+df = df.withColumn('lastName', titleStringUDF(F.col('lastName')))
+
+# COMMAND ----------
+
+display(df)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 2.0 Correct the SSN: Remove the hyphen
+
+# COMMAND ----------
+
+def removeHyphen(string):
+    return string.replace('-', '')
+
+removeHyphenUDF = udf(removeHyphen)
+
+# COMMAND ----------
+
+df = df.withColumn('ssn', removeHyphenUDF(F.col('ssn')))
+
+# COMMAND ----------
+
+final_df = df.dropDuplicates(subset=['firstName', 'lastName', 'middleName', 'ssn'])
+
+# COMMAND ----------
+
+final_df.count()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### 3.0 Save the File
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
+final_df.write.mode('overwrite').format('parquet').save(destFile)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ##![Spark Logo Tiny](https://s3-us-west-2.amazonaws.com/curriculum-release/images/105/logo_spark_tiny.png) Validate Your Answer
 # MAGIC 
 # MAGIC At the bare minimum, we can verify that you wrote the parquet file out to **destFile** and that you have the right number of records.
 # MAGIC 
 # MAGIC Running the following cell to confirm your result:
+
+# COMMAND ----------
+
+display(dbutils.fs.ls(destFile))
 
 # COMMAND ----------
 
@@ -84,3 +179,7 @@ clearYourResults()
 validateYourAnswer("01 Parquet File Exists", 1276280174, partFiles)
 validateYourAnswer("02 Expected 100000 Records", 972882115, finalCount)
 summarizeYourResults()
+
+# COMMAND ----------
+
+

@@ -33,23 +33,26 @@
 
 # COMMAND ----------
 
-spark.sql("""
-    DROP TABLE IF EXISTS iot_data
-  """)
-spark.sql("""
-    CREATE TABLE iot_data
-    USING DELTA
-    LOCATION '{}/delta/iot-events/'
-  """.format(userhome))
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC Set up relevant paths.
 
 # COMMAND ----------
 
 iotPath = userhome + "/delta/iot-events/"
+
+# COMMAND ----------
+
+spark.sql("""
+    DROP TABLE IF EXISTS iot_data
+""")
+
+# COMMAND ----------
+
+spark.sql("""
+    CREATE TABLE iot_data
+    USING DELTA
+    LOCATION '{}'
+""".format(iotPath))
 
 # COMMAND ----------
 
@@ -223,6 +226,7 @@ display(dbutils.fs.ls(iotPath + "/date=2016-07-26"))
 # MAGIC <img alt="Caution" title="Caution" style="vertical-align: text-bottom; position: relative; height:1.3em; top:0.0em" src="https://files.training.databricks.com/static/images/icon-warning.svg"/> Databricks does not recommend you set a retention interval shorter than seven days because old snapshots and uncommitted files can still be in use by concurrent readers or writers to the table.
 # MAGIC 
 # MAGIC The scenario here is:
+# MAGIC 
 # MAGIC 0. User A starts a query off uncompacted files, then
 # MAGIC 0. User B invokes a `VACUUM` command, which deletes the uncompacted files
 # MAGIC 0. User A's query fails because the underlying files have disappeared
@@ -252,7 +256,7 @@ spark.conf.set("spark.databricks.delta.retentionDurationCheck.enabled", False)
 
 # MAGIC %sql
 # MAGIC 
-# MAGIC VACUUM iot_data RETAIN 0 HOURS;
+# MAGIC VACUUM iot_data RETAIN 168 HOURS;
 
 # COMMAND ----------
 

@@ -99,6 +99,13 @@ CustomerCountsPath = userhome + "/delta/customer_counts/"
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC SELECT COUNT(*)
+# MAGIC FROM customer_data_delta
+# MAGIC VERSION AS OF 0
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC Using a single file storage system, you now have access to every version of your historical data, ensuring that your data analysts will be able to replicate their reports (and compare aggregate changes over time) and your data scientists will be able to replicate their experiments.
 
@@ -113,8 +120,17 @@ CustomerCountsPath = userhome + "/delta/customer_counts/"
 
 # COMMAND ----------
 
+# MAGIC %sql
+# MAGIC select * from customer_data_delta
+
+# COMMAND ----------
+
 # TODO
-count = spark.sql("FILL IN").collect()[0][0]
+count = spark.sql("select count('InvoiceNo') from customer_data_delta").collect()[0][0]
+
+# COMMAND ----------
+
+count
 
 # COMMAND ----------
 
@@ -153,6 +169,7 @@ count = spark.sql("FILL IN").collect()[0][0]
 # MAGIC   VERSION AS OF 0
 # MAGIC   WHERE Country='Sweden') AS new_entries
 # MAGIC FROM customer_counts
+# MAGIC VERSION AS OF 1
 # MAGIC WHERE Country='Sweden'
 
 # COMMAND ----------

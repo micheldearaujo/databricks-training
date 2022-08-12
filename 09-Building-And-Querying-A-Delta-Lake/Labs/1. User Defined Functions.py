@@ -148,3 +148,7 @@ display(airbnbDF.select(vectorizedUDF(col("host_name"))))
 
 # MAGIC %python
 # MAGIC spark.udf.register("sql_vectorized_udf", vectorizedUDF)
+
+# COMMAND ----------
+
+

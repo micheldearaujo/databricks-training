@@ -16,7 +16,7 @@
 # MAGIC import warnings
 # MAGIC warnings.filterwarnings("ignore")
 # MAGIC 
-# MAGIC import tensorflow
+# MAGIC #import tensorflow
 # MAGIC 
 # MAGIC def display_run_uri(experiment_id, run_id):
 # MAGIC     host_name = dbutils.notebook.entry_point.getDbutils().notebook().getContext().tags().get("browserHostName").get()
