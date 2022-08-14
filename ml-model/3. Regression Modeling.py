@@ -89,6 +89,10 @@ display(bostonDF)
 
 from pyspark.ml.feature import VectorAssembler
 
+# COMMAND ----------
+
+from pyspark.ml.feature import VectorAssembler
+
 featureCol = ["rm"]
 assembler = VectorAssembler(inputCols=featureCol, outputCol="features")
 
@@ -107,7 +111,7 @@ display(bostonFeaturizedDF)
 
 from pyspark.ml.regression import LinearRegression
 
-lr = LinearRegression(featuresCol="features", labelCol="medv")
+lr = LinearRegression(featuresCol='features', labelCol='medv')
 
 lrModel = lr.fit(bostonFeaturizedDF)
 
@@ -152,6 +156,14 @@ print("β1 (coefficient for rm): {}".format(*lrModel.coefficients))
 
 summary = lrModel.summary
 
+# COMMAND ----------
+
+summary.pValues
+
+# COMMAND ----------
+
+summary = lrModel.summary
+
 summary.pValues
 
 # COMMAND ----------
@@ -177,6 +189,10 @@ summary.r2
 
 # COMMAND ----------
 
+[attr for attr in dir(summary) if attr[0] != "-"]
+
+# COMMAND ----------
+
 [attr for attr in dir(summary) if attr[0] != "_"]
 
 # COMMAND ----------
@@ -197,10 +213,9 @@ summary.r2
 
 # COMMAND ----------
 
-from pyspark.ml.feature import VectorAssembler
+featureCols = ['rm', 'crim', 'lstat']
 
-featureCols = ["rm", "crim", "lstat"]
-assemblerMultivariate = VectorAssembler(inputCols=featureCols, outputCol="features")
+assemblerMultivariate = VectorAssembler(inputCols = featureCols, outputCol='features')
 
 bostonFeaturizedMultivariateDF = assemblerMultivariate.transform(bostonDF)
 
@@ -216,9 +231,9 @@ display(bostonFeaturizedMultivariateDF)
 from pyspark.ml.regression import LinearRegression
 
 lrMultivariate = (LinearRegression()
-  .setLabelCol("medv")
-  .setFeaturesCol("features")
-)
+                  .setLabelCol('medv')
+                  .setFeaturesCol('features')
+                 )
 
 lrModelMultivariate = lrMultivariate.fit(bostonFeaturizedMultivariateDF)
 

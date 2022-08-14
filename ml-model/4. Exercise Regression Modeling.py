@@ -42,11 +42,15 @@ display(bostonDF)
 
 # COMMAND ----------
 
-# TODO
-allFeatures = # FILL_IN
-assemblerAllFeatures = # FILL_IN
+from pyspark.sql.functions import col
+from pyspark.ml.feature import VectorAssembler
 
-bostonFeaturizedAllFeaturesDF = # FILL_IN
+# COMMAND ----------
+
+allFeatures = list(bostonDF.drop('medv').columns)
+assemblerAllFeatures = VectorAssembler(inputCols = allFeatures, outputCol='allFeatures')
+
+bostonFeaturizedAllFeaturesDF = assemblerAllFeatures.transform(bostonDF)
 
 # COMMAND ----------
 
@@ -84,9 +88,13 @@ print("Tests passed!")
 
 # COMMAND ----------
 
+from pyspark.ml.regression import LinearRegression
+
+# COMMAND ----------
+
 # TODO
-lrAllFeatures = # FILL_IN
-lrModelAllFeatures = # FILL_IN
+lrAllFeatures = LinearRegression(featuresCol='allFeatures', labelCol='medv')
+lrModelAllFeatures = lrAllFeatures.fit(bostonFeaturizedAllFeaturesDF)
 
 # COMMAND ----------
 
@@ -109,7 +117,15 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
+lrModelAllFeatures.coefficients
+
+# COMMAND ----------
+
+lrModelAllFeatures.summary.explainedVariance
+
+# COMMAND ----------
+
+lrModelAllFeatures.summary.r2
 
 # COMMAND ----------
 
@@ -121,3 +137,18 @@ print("Tests passed!")
 # COMMAND ----------
 
 # TODO
+lrModelAllFeatures.summary.pValues
+
+# COMMAND ----------
+
+# ANSWER
+'''
+Using the 5% rule of thumb on P-values, the values listed below that are below .05
+would be considered statistically significant 
+'''
+for feat, pval in zip(allFeatures+["intercept"], lrModelAllFeatures.summary.pValues):
+  print("P-value for {}:\t{}".format(feat, pval))
+
+# COMMAND ----------
+
+

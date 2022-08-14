@@ -68,9 +68,9 @@ display(transformedDF)
 
 # COMMAND ----------
 
-# TODO
-binarizer = # FILL_IN
-transformedBinnedDF = # FILL_IN
+from pyspark.ml.feature import Binarizer
+binarizer = Binarizer(inputCol='review_scores_rating', outputCol='high_rating', threshold=97)
+transformedBinnedDF = binarizer.transform(airbnbDF)
 
 # COMMAND ----------
 
@@ -86,6 +86,10 @@ print("Tests passed!")
 
 # COMMAND ----------
 
+display(transformedBinnedDF)
+
+# COMMAND ----------
+
 # MAGIC %md-sandbox
 # MAGIC ### Step 2: Regular Expressions on Strings
 # MAGIC 
@@ -98,9 +102,15 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
+from pyspark.sql.types import DecimalType
 from pyspark.sql.functions import col, regexp_replace
-transformedBinnedRegexDF = # FILL_IN
+transformedBinnedRegexDF = transformedBinnedDF.withColumn('raw_price', col('price'))
+transformedBinnedRegexDF = transformedBinnedRegexDF.withColumn('price', regexp_replace('price', r"[\$,]", ""))
+transformedBinnedRegexDF = transformedBinnedRegexDF.withColumn('price', col('price').cast(DecimalType()))
+
+# COMMAND ----------
+
+display(transformedBinnedRegexDF)
 
 # COMMAND ----------
 
@@ -108,7 +118,7 @@ transformedBinnedRegexDF = # FILL_IN
 from pyspark.sql.types import DecimalType
 
 dbTest("ML1-P-05-02-01", True, type(transformedBinnedRegexDF.schema["price"].dataType) == type(DecimalType()))
-dbTest("ML1-P-05-02-02", True, "price_raw" in transformedBinnedRegexDF.columns)
+dbTest("ML1-P-05-02-02", True, "raw_price" in transformedBinnedRegexDF.columns)
 dbTest("ML1-P-05-02-03", True, "price" in transformedBinnedRegexDF.columns)
 
 print("Tests passed!")
@@ -123,7 +133,11 @@ print("Tests passed!")
 # COMMAND ----------
 
 # TODO
-transformedBinnedRegexFilteredDF = # FILL_IN
+transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.where((transformedBinnedRegexDF.price > 0) | (transformedBinnedRegexDF.minimum_nights <= 365))
+
+# COMMAND ----------
+
+transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.filter(col('price') >0).filter(col('minimum_nights') <= 365)
 
 # COMMAND ----------
 
@@ -131,3 +145,7 @@ transformedBinnedRegexFilteredDF = # FILL_IN
 dbTest("ML1-P-05-03-01", 4789, transformedBinnedRegexFilteredDF.count())
 
 print("Tests passed!")
+
+# COMMAND ----------
+
+

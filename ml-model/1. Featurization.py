@@ -93,6 +93,10 @@ display(airbnbDF)
 
 # COMMAND ----------
 
+display(uniqueTypesDF)
+
+# COMMAND ----------
+
 from pyspark.ml.feature import StringIndexer
 
 
@@ -112,10 +116,6 @@ display(indexedDF)
 # MAGIC Do this by training and fitting the `OneHotEncoderEstimator`, which only operates on numerical values (this is why we needed to use `StringIndexer` first).
 # MAGIC 
 # MAGIC <img alt="Side Note" title="Side Note" style="vertical-align: text-bottom; position: relative; height:1.75em; top:0.05em; transform:rotate(15deg)" src="https://files.training.databricks.com/static/images/icon-note.webp"/> Certain models, such as random forest, do not need one-hot encoding (and can actually be negatively affected by the process).  The models we'll explore in this course, however, do need this process.
-
-# COMMAND ----------
-
-from pyspark.ml.feature import OneHotEncoder
 
 # COMMAND ----------
 
@@ -204,29 +204,6 @@ display(imputedDF)
 
 # COMMAND ----------
 
-from pyspark.ml.feature import Imputer
-
-imputeCols = [
-  "host_total_listings_count",
-  "bathrooms",
-  "beds", 
-  "review_scores_rating",
-  "review_scores_accuracy",
-  "review_scores_cleanliness",
-  "review_scores_checkin",
-  "review_scores_communication",
-  "review_scores_location",
-  "review_scores_value"
-]
-
-imputer = Imputer(strategy="median", inputCols=imputeCols, outputCols=imputeCols)
-imputerModel = imputer.fit(airbnbDF)
-imputedDF = imputerModel.transform(airbnbDF)
-
-display(imputedDF)
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ### Creating a Pipeline
 # MAGIC 
@@ -235,12 +212,12 @@ display(imputedDF)
 
 # COMMAND ----------
 
-from pyspark.ml import  Pipeline
+from pyspark.ml import Pipeline
 
 pipeline = Pipeline(stages=[
-  indexer,
-  encoder,
-  imputer
+    indexer,
+    encoder,
+    imputer
 ])
 
 # COMMAND ----------
@@ -257,10 +234,3 @@ display(transformedDF)
 # COMMAND ----------
 
 transformedDF.count()
-
-# COMMAND ----------
-
-pipelineModel = pipeline.fit(airbnbDF)
-transformedDF = pipelineModel.transform(airbnbDF)
-
-display(transformedDF)
