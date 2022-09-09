@@ -114,7 +114,7 @@ print("We have {} training examples and {} test examples.".format(trainDF.count(
 
 from pyspark.sql.functions import avg
 
-trainAvg = trainDF.select(avg("medv")).first()[0]
+trainAvg = trainDF.select(avg('medv')).first()[0]
 
 print("Average home value: {}".format(trainAvg))
 
@@ -155,7 +155,9 @@ display(testPredictionDF)
 
 from pyspark.ml.evaluation import RegressionEvaluator
 
-evaluator = RegressionEvaluator(predictionCol="prediction", labelCol="medv", metricName="mse")
+# COMMAND ----------
+
+evaluator = RegressionEvaluator(predictionCol='prediction', labelCol='medv', metricName='rmse')
 
 # COMMAND ----------
 

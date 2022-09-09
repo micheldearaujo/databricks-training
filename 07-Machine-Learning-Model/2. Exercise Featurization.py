@@ -104,6 +104,9 @@ display(transformedBinnedDF)
 
 from pyspark.sql.types import DecimalType
 from pyspark.sql.functions import col, regexp_replace
+
+# COMMAND ----------
+
 transformedBinnedRegexDF = transformedBinnedDF.withColumn('raw_price', col('price'))
 transformedBinnedRegexDF = transformedBinnedRegexDF.withColumn('price', regexp_replace('price', r"[\$,]", ""))
 transformedBinnedRegexDF = transformedBinnedRegexDF.withColumn('price', col('price').cast(DecimalType()))
@@ -132,12 +135,11 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
-transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.where((transformedBinnedRegexDF.price > 0) | (transformedBinnedRegexDF.minimum_nights <= 365))
+transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.where((transformedBinnedRegexDF.price > 0) & (transformedBinnedRegexDF.minimum_nights <= 365))
 
 # COMMAND ----------
 
-transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.filter(col('price') >0).filter(col('minimum_nights') <= 365)
+transformedBinnedRegexFilteredDF = transformedBinnedRegexDF.filter(col('price') > 0).filter(col('minimum_nights') <= 365)
 
 # COMMAND ----------
 

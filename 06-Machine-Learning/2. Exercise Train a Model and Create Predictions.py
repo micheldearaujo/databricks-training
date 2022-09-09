@@ -38,11 +38,12 @@ display(bostonDF)
 
 # COMMAND ----------
 
-# TODO
 from pyspark.ml.feature import VectorAssembler
 featureCols = ['indus', 'age', 'dis']
 
-assembler = VectorAssembler(inputCols=featureCols, outputCol='newFeatures')
+assembler = VectorAssembler(inputCols = featureCols,
+                           outputCol = 'newFeatures')
+
 bostonFeaturizedDF2 = assembler.transform(bostonDF)
 
 # COMMAND ----------
@@ -66,8 +67,9 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
 from pyspark.ml.regression import LinearRegression
+
+# COMMAND ----------
 
 lrNewFeatures = LinearRegression(labelCol='medv', featuresCol='newFeatures')
 lrModelNew = lrNewFeatures.fit(bostonFeaturizedDF2)
@@ -96,14 +98,25 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
 from pyspark.ml.linalg import Vectors
+
+# COMMAND ----------
 
 data = [(Vectors.dense([11., 68., 4.]), ),
         (Vectors.dense([6., 35., 2.]), ),
-        (Vectors.dense([19., 74., 8.]), )]
-newDataDF = spark.createDataFrame(data, ["newFeatures"])
+        (Vectors.dense([19., 74., 8.]), ),
+    
+]
+
+# COMMAND ----------
+
+newDataDF = spark.createDataFrame(data, ['newFeatures'])
+
+# COMMAND ----------
+
 predictionsDF = lrModelNew.transform(newDataDF)
+
+# COMMAND ----------
 
 display(predictionsDF)
 
