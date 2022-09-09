@@ -93,10 +93,6 @@ display(airbnbDF)
 
 # COMMAND ----------
 
-display(uniqueTypesDF)
-
-# COMMAND ----------
-
 from pyspark.ml.feature import StringIndexer
 
 
@@ -124,6 +120,10 @@ from pyspark.ml.feature import OneHotEncoder
 encoder = OneHotEncoder(inputCols=["room_type_index"], outputCols=["encoded_room_type"])
 encoderModel = encoder.fit(indexedDF)
 encodedDF = encoderModel.transform(indexedDF)
+
+display(encodedDF)
+
+# COMMAND ----------
 
 display(encodedDF)
 
@@ -204,6 +204,14 @@ display(imputedDF)
 
 # COMMAND ----------
 
+display(imputedDF)
+
+# COMMAND ----------
+
+display(imputedDF.describe())
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ### Creating a Pipeline
 # MAGIC 
@@ -228,9 +236,22 @@ pipeline = Pipeline(stages=[
 # COMMAND ----------
 
 pipelineModel = pipeline.fit(airbnbDF)
+
+# COMMAND ----------
+
+transformedDF = pipelineModel.transform(airbnbDF)
+display(transformedDF)
+
+# COMMAND ----------
+
+pipelineModel = pipeline.fit(airbnbDF)
 transformedDF = pipelineModel.transform(airbnbDF)
 display(transformedDF)
 
 # COMMAND ----------
 
 transformedDF.count()
+
+# COMMAND ----------
+
+

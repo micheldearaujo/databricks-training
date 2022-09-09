@@ -39,7 +39,6 @@ display(bikeDF)
 
 # COMMAND ----------
 
-# TODO
 trainBikeDF, testBikeDF = bikeDF.randomSplit([0.7, 0.3], seed=42)
 
 # COMMAND ----------
@@ -66,7 +65,6 @@ from pyspark.sql.functions import avg, lit
 
 # COMMAND ----------
 
-# TODO
 avgTrainCnt = trainBikeDF.select(avg('cnt')).first()[0]
 bikeTestPredictionDF = testBikeDF.withColumn('prediction', lit(avgTrainCnt))
 
@@ -89,11 +87,17 @@ print("Tests passed!")
 
 # COMMAND ----------
 
-# TODO
 from pyspark.ml.evaluation import RegressionEvaluator
-evaluator = RegressionEvaluator(predictionCol='prediction', labelCol='cnt', metricName='mse')
+
+evaluator = RegressionEvaluator(predictionCol='prediction', labelCol='cnt', metricName = 'mse')
+
+# COMMAND ----------
+
 testError = evaluator.evaluate(bikeTestPredictionDF)
 
+# COMMAND ----------
+
+testError
 
 # COMMAND ----------
 
@@ -112,6 +116,97 @@ print("Tests passed!")
 # COMMAND ----------
 
 display(bikeDF)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Step 4.1: VectorAssembler on the training DF
+
+# COMMAND ----------
+
+from pyspark.ml.feature import VectorAssembler
+
+# COMMAND ----------
+
+assembler = VectorAssembler(inputCols=bikeDF.drop('cnt').columns, outputCol='features')
+
+# COMMAND ----------
+
+trainBikeFeaturizedDF = assembler.transform(trainBikeDF)
+
+# COMMAND ----------
+
+display(trainBikeFeaturizedDF)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Step 4.2: Create the regression model
+
+# COMMAND ----------
+
+from pyspark.ml.regression import LinearRegression
+
+# COMMAND ----------
+
+lr = LinearRegression(featuresCol='features',
+                     labelCol='cnt',
+                     predictionCol='lr_prediction')
+
+# COMMAND ----------
+
+lrModel = lr.fit(trainBikeFeaturizedDF)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Step 4.3: Predict on the test site
+
+# COMMAND ----------
+
+display(bikeTestPredictionDF)
+
+# COMMAND ----------
+
+bikeTestPredictionDF = assembler.transform(bikeTestPredictionDF)
+
+# COMMAND ----------
+
+bikeTestPredictionDF = lrModel.transform(bikeTestPredictionDF)
+
+# COMMAND ----------
+
+display(bikeTestPredictionDF)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Step 4.4: Evaluate
+
+# COMMAND ----------
+
+from pyspark.ml.evaluation import RegressionEvaluator
+
+# COMMAND ----------
+
+evaluator = RegressionEvaluator(predictionCol='lr_prediction',
+                           labelCol='cnt', metricName='mse')
+
+# COMMAND ----------
+
+BestModelError = evaluator.evaluate(bikeTestPredictionDF)
+
+# COMMAND ----------
+
+print(f"The new model result is: {BestModelError}")
+
+# COMMAND ----------
+
+np.sqrt(testError)
+
+# COMMAND ----------
+
+np.sqrt(BestModelError)
 
 # COMMAND ----------
 

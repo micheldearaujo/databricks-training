@@ -156,14 +156,6 @@ print("β1 (coefficient for rm): {}".format(*lrModel.coefficients))
 
 summary = lrModel.summary
 
-# COMMAND ----------
-
-summary.pValues
-
-# COMMAND ----------
-
-summary = lrModel.summary
-
 summary.pValues
 
 # COMMAND ----------
@@ -190,10 +182,6 @@ summary.r2
 # COMMAND ----------
 
 [attr for attr in dir(summary) if attr[0] != "-"]
-
-# COMMAND ----------
-
-[attr for attr in dir(summary) if attr[0] != "_"]
 
 # COMMAND ----------
 

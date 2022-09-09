@@ -84,10 +84,12 @@
 # COMMAND ----------
 
 bostonDF = (spark.read
-  .option("HEADER", True)
-  .option("inferSchema", True)
-  .csv("/mnt/training/bostonhousing/bostonhousing/bostonhousing.csv")
-)
+            .option('header', 'true')
+            .option('inferSchema', 'true')
+            .csv('/mnt/training/bostonhousing/bostonhousing/bostonhousing.csv')
+           )
+
+# COMMAND ----------
 
 display(bostonDF)
 
@@ -98,6 +100,22 @@ display(bostonDF)
 # MAGIC 
 # MAGIC <img alt="Side Note" title="Side Note" style="vertical-align: text-bottom; position: relative; height:1.75em; top:0.05em; transform:rotate(15deg)" src="https://files.training.databricks.com/static/images/icon-note.webp"/> See the <a href="http://spark.apache.org/docs/latest/api/python/pyspark.ml.html?highlight=vectorassembler#pyspark.ml.feature.VectorAssembler" target="_blank">`VectorAssembler` documentation for more details.</a>
 # MAGIC <img alt="Side Note" title="Side Note" style="vertical-align: text-bottom; position: relative; height:1.75em; top:0.05em; transform:rotate(15deg)" src="https://files.training.databricks.com/static/images/icon-note.webp"/> `VectorAssembler` is a tranformer, which implements a `.transform()` method.  Estimators, by contrast, need to learn from the data using a `.fit()` method before they can transform data.
+
+# COMMAND ----------
+
+from pyspark.ml.feature import VectorAssembler
+
+# COMMAND ----------
+
+# define the features
+featureCols = ['rm', 'crim', 'lstat']
+
+# Create the vector assembler instance
+assembler = VectorAssembler(inputCols=featureCols,
+                           outputCol='features')
+
+# Apply the assembler on the dataset
+bostonFeaturizedDF = assembler.transform(bostonDF)
 
 # COMMAND ----------
 
@@ -149,7 +167,9 @@ display(bostonFeaturizedDF)
 
 from pyspark.ml.regression import LinearRegression
 
-lr = LinearRegression(labelCol="medv", featuresCol="features")
+# COMMAND ----------
+
+lr = LinearRegression(labelCol='medv', featuresCol='features')
 
 # COMMAND ----------
 
@@ -164,6 +184,10 @@ lrModel = lr.fit(bostonFeaturizedDF)
 
 # MAGIC %md
 # MAGIC Take a look at what the model learned from our data.  In the case of linear regression, this comes in the form of an equation that describes the relationship the model has just learned.  This will be covered in more detail in later lessons.
+
+# COMMAND ----------
+
+lrModel.coefficients
 
 # COMMAND ----------
 
